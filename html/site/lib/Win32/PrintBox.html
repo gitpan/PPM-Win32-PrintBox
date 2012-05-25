@@ -1,0 +1,190 @@
+<?xml version="1.0" ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!-- saved from url=(0017)http://localhost/ -->
+<script language="JavaScript" src="../../../displayToc.js"></script>
+<script language="JavaScript" src="../../../tocParas.js"></script>
+<script language="JavaScript" src="../../../tocTab.js"></script>
+<link rel="stylesheet" type="text/css" href="../../../scineplex.css">
+<title>Win32::PrintBox - Redirects print STDOUT and warn statements to a message box under wperl</title>
+<link rel="stylesheet" href="../../../Active.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:" />
+</head>
+
+<body>
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<script>writelinks('__top__',3);</script>
+<h1><a>Win32::PrintBox - Redirects print STDOUT and warn statements to a message box under wperl</a></h1>
+<p><a name="__index__"></a></p>
+
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#version">VERSION</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#subroutines_methods">SUBROUTINES/METHODS</a></li>
+	<ul>
+
+		<li><a href="#new">new</a></li>
+		<li><a href="#warnbox">WarnBox</a></li>
+		<li><a href="#printmsgbox">PrintMsgBox</a></li>
+		<li><a href="#cmd_cursor">CMD_Cursor</a></li>
+		<li><a href="#get_page_size">get_page_size</a></li>
+		<li><a href="#set_page_size">set_page_size</a></li>
+	</ul>
+
+	<li><a href="#author">AUTHOR</a></li>
+	<li><a href="#bugs">BUGS</a></li>
+	<li><a href="#support">SUPPORT</a></li>
+	<li><a href="#acknowledgements">ACKNOWLEDGEMENTS</a></li>
+	<li><a href="#license_and_copyright">LICENSE AND COPYRIGHT</a></li>
+</ul>
+
+<hr name="index" />
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<hr />
+<h1><a name="name">NAME</a></h1>
+<p>Win32::PrintBox - Redirects print STDOUT and warn statements to a message box under wperl</p>
+<p>
+</p>
+<hr />
+<h1><a name="version">VERSION</a></h1>
+<p>Version 0.01</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<pre>
+    <span class="keyword">use</span> <span class="variable">Win32::PrintBox</span><span class="operator">;</span>
+    
+    <span class="keyword">print</span> <span class="string">"Program output\n"</span><span class="operator">;</span>
+    <span class="keyword">warn</span> <span class="string">"I am here\n"</span><span class="operator">;</span>
+</pre>
+<p>At startup, the module checks if the script was started in <code>Windows Mode</code> (it 
+looks for wperl in $^X).  If so, it creates a new glob (*MSG_FH), and ties the 
+PRINT, PRINTF and DESTROY methods to it, to convert warn and print statements 
+into Win32 message boxes. It also sets up a handler to trap __WARN__ signals, to 
+do the same.</p>
+<p>For warn, output is immediately sent to the user as a message box.</p>
+<p>For print and printf, the output is buffered.  When a <code>PAGE_SIZE</code> of output is 
+collected, it is displayed to the user.  When DESTROY is called, any remaining output left in 
+the buffer is also displayed.  The user may press CANCEL to exit the script prematurely.</p>
+<p>In console mode (non-windows), this module does nothing, unless the script was 
+started from a windows program (File Explorer or other windows application).  In 
+this case, A DOS pause command is emulated at the end of the script, so that the 
+user can acknowledge console output before the console window closes.</p>
+<p>
+</p>
+<hr />
+<h1><a name="subroutines_methods">SUBROUTINES/METHODS</a></h1>
+<p>
+</p>
+<h2><a name="new">new</a></h2>
+<p>Sets up a handler to catch __WARN__ signals, and process them with sub <code>WarnBox</code> .</p>
+<p>
+</p>
+<h2><a name="warnbox">WarnBox</a></h2>
+<p>Sends warn text to a Win32::MsgBox immediately.  Script dies if user presses CANCEL.</p>
+<p>
+</p>
+<h2><a name="printmsgbox">PrintMsgBox</a></h2>
+<p>This sub is called via a tied file handle when there is a print or printf to 
+STDOUT.  Normally it just buffers the input, and returns.</p>
+<p>If enough data is collected, the page full of is presented to the user in one 
+shot via a message box and the buffer is emptied.  The user acknowleges the 
+message by clicking OK, but can exit, by clicking CANCEL.</p>
+<p>Does not actually override the print function, but traps the currently selected 
+file handle, and redirects the output directed to the selected filehandle, and 
+handles it with the subroutines within this package.  Not exactly easy to 
+understand, but works very nicely.</p>
+<p>No need to override CORE::print or CORE::GLOBAL::print.  Which doesnt work anyways.</p>
+<p>
+</p>
+<h2><a name="cmd_cursor">CMD_Cursor</a></h2>
+<p>Examines the cursor location of the console window. If a new command prompt 
+window is opened, then the 'y' cursor position will be at row 1. This will be 
+used in the END block to decide whether a `Press any key to continue` should be 
+added.</p>
+<p>
+</p>
+<h2><a name="get_page_size">get_page_size</a></h2>
+<p>Returns the configured number of lines of collected text, before a message box is displayed.  Default is 25.</p>
+<p>
+</p>
+<h2><a name="set_page_size">set_page_size</a></h2>
+<p>Sets the configured number of lines of collected text, before a message box is displayed.</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>David Clarke, <code>&lt;dclarke@cpan.org&gt;</code></p>
+<p>
+</p>
+<hr />
+<h1><a name="bugs">BUGS</a></h1>
+<p>Please report any bugs or feature requests to <code>bug-win32-printbox at rt.cpan.org</code>, or through
+the web interface at <a href="http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Win32-PrintBox">http://rt.cpan.org/NoAuth/ReportBug.html</a>.  
+I will be notified, and then you will automatically be notified of progress on 
+your bug as I make changes.</p>
+<p>This module does not play nicely with other modules that use the __WARN__ signal 
+handler, for obvious reasions.</p>
+<p>compiler errors/warnings will not be visible if the script is executed via wperl</p>
+<p>
+</p>
+<hr />
+<h1><a name="support">SUPPORT</a></h1>
+<p>You can find documentation for this module with the perldoc command.</p>
+<pre>
+    <a href="../../../lib/pods/perldoc.html">perldoc</a> Win32::PrintBox</pre>
+<p>You can also look for information at:</p>
+<ul>
+<li><strong><a name="rt_cpans_request_tracker2" class="item">RT: CPANs request tracker</a></strong>
+
+<p><a href="http://rt.cpan.org/NoAuth/Bugs.html?Dist=Win32-PrintBox">http://rt.cpan.org/NoAuth/Bugs.html</a></p>
+</li>
+<li><strong><a name="annocpan_annotated_cpan_documentation2" class="item">AnnoCPAN: Annotated CPAN documentation</a></strong>
+
+<p><a href="http://annocpan.org/dist/Win32-PrintBox">http://annocpan.org/dist/Win32-PrintBox</a></p>
+</li>
+<li><strong><a name="cpan_ratings2" class="item">CPAN Ratings</a></strong>
+
+<p><a href="http://cpanratings.perl.org/d/Win32-PrintBox">http://cpanratings.perl.org/d/Win32-PrintBox</a></p>
+</li>
+<li><strong><a name="search_cpan2" class="item">Search CPAN</a></strong>
+
+<p><a href="http://search.cpan.org/dist/Win32-PrintBox/">http://search.cpan.org/dist/Win32-PrintBox/</a></p>
+</li>
+</ul>
+<p>
+</p>
+<hr />
+<h1><a name="acknowledgements">ACKNOWLEDGEMENTS</a></h1>
+<p>Concepts for intercepting warn and print statements are borrowed from the 
+Apache::ASP module by Joshua Chamas.</p>
+<p>The idea for checking the cursor location came from 
+<a href="http://www.codeguru.com/cpp/misc/misc/consoleapps/article.php/c15893/Pause-Before-Exiting-a-Console-Application.htm">http://www.codeguru.com/cpp/misc/misc/consoleapps/article.php/c15893/Pause-Before-Exiting-a-Console-Application.htm</a>.  Thanks to Marc Gregoire.  I tried 
+using Win32::Console to capture the initial cursor position, but Win32::Console::ANSI seemed
+to work better.</p>
+<p>
+</p>
+<hr />
+<h1><a name="license_and_copyright">LICENSE AND COPYRIGHT</a></h1>
+<p>Copyright 2012 David Clarke</p>
+<p>This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.</p>
+<p>See <a href="http://dev.perl.org/licenses/">http://dev.perl.org/licenses/</a> for more information.</p>
+
+</body>
+
+</html>
